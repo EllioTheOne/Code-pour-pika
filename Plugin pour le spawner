@@ -1,0 +1,54 @@
+package com.example.SpawnerMiningPlugin;
+
+import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.java.JavaPlugin;
+
+public class SpawnerMiningPlugin extends JavaPlugin implements Listener {
+
+    @Override
+    public void onEnable() {
+        getServer().getPluginManager().registerEvents(this, this);
+    }
+
+    @EventHandler
+    public void onBlockBreak(BlockBreakEvent event) {
+        Player player = event.getPlayer();
+        Block block = event.getBlock();
+
+        // Vérifiez si le bloc cassé est une cage à monstres (spawner)
+        if (block.getType() == Material.SPAWNER) {
+            // Faites apparaître l'item de la cage à monstres
+            ItemStack spawnerItem = new ItemStack(Material.SPAWNER, 1);
+
+            // Vérifiez si le joueur a un emplacement libre dans son inventaire
+            if (player.getInventory().firstEmpty() != -1) {
+                // Donnez au joueur l'item de la cage à monstres
+                player.getInventory().addItem(spawnerItem);
+
+                // Faites apparaître l'œuf de spawn (si disponible)
+                if (Math.random() < 0.5) {  // 50% de chance de faire apparaître un œuf de spawn
+                    ItemStack spawnEgg = new ItemStack(getSpawnEggForSpawner(block), 1);
+                    player.getWorld().dropItemNaturally(block.getLocation(), spawnEgg);
+                }
+
+                // Annulez la chute normale de la cage à monstres
+                event.setDropItems(false);
+            } else {
+                player.sendMessage("Votre inventaire est plein. Libérez de l'espace avant de miner des cages à monstres.");
+            }
+        }
+    }
+
+    // Vous devez implémenter une méthode pour déterminer l'œuf de spawn approprié pour le type de la cage à monstres
+    private Material getSpawnEggForSpawner(Block spawnerBlock) {
+        // Implémentez votre logique pour déterminer l'œuf de spawn en fonction du type de la cage à monstres
+        // Pour simplifier, retournez un œuf de spawn générique ici
+        return Material.COW_SPAWN_EGG;
+    }
+}
